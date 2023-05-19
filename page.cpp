@@ -88,7 +88,7 @@ bool page::insert(char *key,uint64_t val){
 
 		//offset
 		printf("offset\n");
-		
+		void* new_off = (void*)((uint8_t*)offset_array+num_data*2);
 		for(int i=0; i<num_data; i++){
 			uint64_t curr_off=get2byte(data+i*2);
 			address=(uint64_t)this+curr_off+2;  //offset array에 들어간 키의 주소값
@@ -96,34 +96,35 @@ bool page::insert(char *key,uint64_t val){
 
 			  
         	if (strcmp((char*)(void*)address, key) > 0) {
-				printf("offset_array: %d, data+i*2: %d\n",offset_array+num_data*2,data+i*2);
+				//printf("offset_array: %d, data+i*2: %d\n",offset_array+num_data,data+i*2);
 				
 				memcpy((data+(i+1)*2),(data+i*2),2*(num_data-i));
 				printf("data_dest: %d!!!!!\n",data_dest);
 				memcpy(data+i*2,&data_dest,2);
-				index=1;
+				index=i;
 				break;
         	}
 		}
-		printf("^^^^^^^^offset_array: %d\n",offset_array+num_data*2);
+		//printf("^^^^^^^^offset_array: %d\n",offset_array+num_data*2);
+		
 		if(index==-1){
-			memcpy(offset_array+num_data*2,&data_dest,2);
+			memcpy(new_off,&data_dest,2);
 		}
 		
-		printf("memcpy로 data insert => offset array %u \n",get2byte(offset_array+num_data*2));
+		printf("memcpy로 data insert => offset array %u \n",get2byte(new_off));
 		num_data++;
 		hdr.set_num_data(num_data);
 	
 		
 		//hdr.set_offset_array((void*)((uint64_t)offset_array + 2));
 
-		//printf("offset array address %d \n", hdr.get_offset_array());
+		printf("offset array address(new_off)= %d data address: %d \n", new_off,data);
 		for(int i=0; i<num_data; i++){
 			off= *(uint16_t *)((uint64_t)data+i*2);	
 			printf(" %d |",off);
 		}
 		printf("\n");
-		printf("offset array %u \n -----insert 끝------\n",get2byte(offset_array+num_data*2));
+		printf("offset array %u \n -----insert 끝------\n",get2byte(new_off));
 
 	}
 		printf("현재 데이터 개수는? : %d\n", num_data);
