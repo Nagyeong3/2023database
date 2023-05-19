@@ -56,7 +56,7 @@ bool page::insert(char *key,uint64_t val){
 	//printf("offset array %d \n",offset_array);
 	uint16_t off=0;
 	uint16_t record_size =  2 + strlen(key)+ 1 +sizeof(val);	// 레코드 사이즈 = 레코드 길이 담을 공간 + 키 길이 + '/0' + value size
-
+	int index = -1;
 	if(is_full(record_size)){
 		printf("page is full\n");
 		return false;
@@ -88,21 +88,34 @@ bool page::insert(char *key,uint64_t val){
 
 		//offset
 		printf("offset\n");
-		memcpy(offset_array,&data_dest,2);
+		
 		for(int i=0; i<num_data; i++){
 			uint64_t curr_off=get2byte(data+i*2);
-			address=(uint64_t)this+curr_off+2;
+			address=(uint64_t)this+curr_off+2;  //offset array에 들어간 키의 주소값
 			printf("curr_off(%d)에 들어간 key = %s\n",curr_off, (char*)(void*)address);
-			if((char*)(void*)address > key){
-				//put2byte(data+i*2,key);
-			}
+
+			  
+        	if (strcmp((char*)(void*)address, key) > 0) {
+				printf("offset_array: %d, data+i*2: %d\n",offset_array+num_data*2,data+i*2);
+				
+				memcpy((data+(i+1)*2),(data+i*2),2*(num_data-i));
+				printf("data_dest: %d!!!!!\n",data_dest);
+				memcpy(data+i*2,&data_dest,2);
+				index=1;
+				break;
+        	}
 		}
-		printf("memcpy로 data insert => offset array %u \n",get2byte(offset_array));
+		printf("^^^^^^^^offset_array: %d\n",offset_array+num_data*2);
+		if(index==-1){
+			memcpy(offset_array+num_data*2,&data_dest,2);
+		}
+		
+		printf("memcpy로 data insert => offset array %u \n",get2byte(offset_array+num_data*2));
 		num_data++;
 		hdr.set_num_data(num_data);
 	
 		
-		hdr.set_offset_array((void*)((uint64_t)offset_array + 2));
+		//hdr.set_offset_array((void*)((uint64_t)offset_array + 2));
 
 		//printf("offset array address %d \n", hdr.get_offset_array());
 		for(int i=0; i<num_data; i++){
@@ -110,7 +123,7 @@ bool page::insert(char *key,uint64_t val){
 			printf(" %d |",off);
 		}
 		printf("\n");
-		printf("offset array %u \n -----insert 끝------\n",get2byte(offset_array));
+		printf("offset array %u \n -----insert 끝------\n",get2byte(offset_array+num_data*2));
 
 	}
 		printf("현재 데이터 개수는? : %d\n", num_data);
