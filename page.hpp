@@ -1,7 +1,7 @@
 #include "slot_header.hpp"
 
-//#define PAGE_SIZE 256 
-#define PAGE_SIZE 4096
+#define PAGE_SIZE 256 
+//#define PAGE_SIZE 4096
 class page{
 	private:
 		slot_header hdr;

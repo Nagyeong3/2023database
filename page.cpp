@@ -1,6 +1,6 @@
 #include "page.hpp"
 #include <iostream> 
-#include <cstring> 
+#include <cstring>
 //dest = data를 저장할 메모리 공간
 void put2byte(void *dest, uint16_t data){
 	*(uint16_t*)dest = data;
@@ -46,31 +46,63 @@ page *page::get_leftmost_ptr(){
 
 uint64_t page::find(char *key){
 	uint64_t val = 0;
+	uint64_t childAddr=0;
 	int num_data = hdr.get_num_data();
 	void *offset_array=hdr.get_offset_array();
-	uint64_t address;
+	uint64_t address,leftmost_ptr;
 	void* new_off;
 	char* stored_key;
 	
-	for(int i =0; i<num_data; i++){
-		new_off = (void*)((uint8_t*)offset_array+i*2);
-		//printf("get new off?? %d\n",get2byte(new_off));
-		address = get2byte(new_off)+2+(uint64_t)this;
-		//printf("주소에 들어간 key: %s\n",(char*)(void*)address);
-		stored_key=(char*)(void*)address;
-		
-		if(strcmp(stored_key,key)==0){
-			address=address+strlen(stored_key)+1;
-			//printf("value address??? : %d\n",(void*)address);
-            //val = get2byte((void*)address);
-			val= get_val((void *)stored_key);
+	if(this->get_type()==LEAF){
+		for(int i =0; i<num_data; i++){
+			new_off = (void*)((uint8_t*)offset_array+i*2);
+			//printf("get new off?? %d\n",get2byte(new_off));
+			address = get2byte(new_off)+2+(uint64_t)this;
+			//printf("주소에 들어간 key: %s\n",(char*)(void*)address);
+			stored_key=(char*)(void*)address;
+			
+			if(strcmp(stored_key,key)==0){
+				address=address+strlen(stored_key)+1;
+				//printf("value address??? : %d\n",(void*)address);
+				//val = get2byte((void*)address);
+				val= get_val((void *)stored_key);
 
-            //printf("Found! val = %lu\n", val);
-            break;
+				printf("Found! val = %lu\n", val);
+				break;
+			}
+		}
+		return val;
+	}else{	//internal node
+		for(int i =0; i<num_data; i++){
+			new_off = (void*)((uint8_t*)offset_array+i*2);
+			//printf("get new off?? %d\n",get2byte(new_off));
+			address = get2byte(new_off)+2+(uint64_t)this;
+			//printf("주소에 들어간 key: %s\n",(char*)(void*)address);
+			stored_key=(char*)(void*)address;
+			
+			if(strcmp(key,stored_key)<0){
+				//child node로 이동
+				//internal node의 경우 val에는 child node의 시작주소값이 들어있음
+				if(i==0){
+					leftmost_ptr = (uint64_t)(get_leftmost_ptr());
+					printf("하위 leftmost ptr 주소 반환 %d\n",leftmost_ptr);
+					return leftmost_ptr;
+				}
+				else{
+					//printf("value address??? : %d\n",(void*)address);
+					//val = get2byte((void*)address);
+					childAddr= get_val((void *)stored_key);
+					printf("하위 child node 주소 반환 : %d\n",childAddr);
+					return childAddr;
+					//printf("Found! val = %lu\n", val);
+				}				
+			}else{
+				//같은 페이지 내 옆 key로이동
+				address=address+strlen(stored_key)+1;
+			}
 		}
 	}
-	
-	return val;
+
 }
 
 bool page::insert(char *key,uint64_t val){
@@ -135,13 +167,7 @@ bool page::insert(char *key,uint64_t val){
 		num_data++;
 		hdr.set_num_data(num_data);
 
-		//printf("offset array address(new_off)= %d data address: %d \n", new_off,data);
-		// for(int i=0; i<num_data; i++){
-		// 	off= *(uint16_t *)((uint64_t)data+i*2);	
-		// 	printf(" %d |",off);
-		// }
-		// printf("\n");
-		// printf("offset array %u \n -----insert 끝------\n",get2byte(new_off));
+	
 
 	}
 		printf("현재 데이터 개수는? : %d\n", num_data);
@@ -151,22 +177,61 @@ bool page::insert(char *key,uint64_t val){
 
 page* page::split(char *key, uint64_t val, char** parent_key){
 	// Please implement this function in project 2.
-	page *new_page;
-	return new_page;
+	page *new_page = new page(get_type());
+	int num_data = hdr.get_num_data();
+	void *offset_array=hdr.get_offset_array();
+	void *stored_key=nullptr;
+	uint16_t off=0;
+	uint64_t stored_val=0;
+	void *data_region=nullptr;
+	if(this->get_type()==LEAF){
+		for(int i=num_data/2; i<num_data; i++){
+			off= *(uint16_t *)((uint64_t)offset_array+i*2);	
+			data_region = (void *)((uint64_t)this+(uint64_t)off);
+			stored_key = get_key(data_region);
+			stored_val= get_val((void *)stored_key);
+			new_page->insert((char*)stored_key,stored_val);
+		}
+		new_page->insert(key,val);
+		//memcpy(this, new_page, sizeof(page));
+		hdr.set_offset_array((void*)((uint64_t)new_page+sizeof(slot_header)));
+		off= *(uint16_t *)((uint64_t)offset_array);
+		data_region = (void *)((uint64_t)this+(uint64_t)off);
+		stored_key = get_key(data_region);	//parent로 올릴 중간 노드
+		*parent_key = (char*)stored_key;
+		return new_page;
+	}else if(this->get_type()==INTERNAL){
+		for(int i=num_data/2; i<num_data; i++){
+			off= *(uint16_t *)((uint64_t)offset_array+i*2);	
+			data_region = (void *)((uint64_t)this+(uint64_t)off);
+			stored_key = get_key(data_region);
+			stored_val= get_val((void *)stored_key);
+			if(i==num_data/2){	//중간노드면 parent로 올리고 new_page에는 넣지 않음
+				new_page->set_leftmost_ptr((page*)stored_val);	//중간노드(parent g)에 이어진 defrag됐던 페이지(child g,h) 주소를 new_page의 leftmost로
+				*parent_key = (char*)stored_key;	//parent g => 상위 PARENT키로 올릴거임
+			}else{
+				new_page->insert((char*)stored_key,stored_val);
+			}
+		}
+		new_page->insert(key,val);
+		return new_page;
+		
+	}
+	
+	
 }
 
 bool page::is_full(uint64_t inserted_record_size){
 	int num_data = hdr.get_num_data();
 	void *offset_array=hdr.get_offset_array();
-	int header_size=sizeof(header_size);
+	int header_size=sizeof(slot_header);
 	printf("------this is is_full func!-------\n");
-	printf("size: %d get_data_region: %d \n",inserted_record_size, hdr.get_data_region_off());
-	for(int i=0; i<num_data; i++){
-		header_size= header_size+i*2;
-	}	
-	int freespace = hdr.get_data_region_off()-header_size-hdr.get_num_data()*2-inserted_record_size-sizeof(uint16_t);
-	//printf("less than 0 check: %d \n",freespace);
-	if(freespace < 0){
+	//printf("numdata: %d size: %d get_data_region: %d \n",num_data, inserted_record_size, hdr.get_data_region_off());
+	header_size+=num_data*2;
+	//printf("header size? : %d sizeof offsetarray",sizeof(slot_header));
+	int freespace = hdr.get_data_region_off()-header_size;
+	printf("header_size: %d print freespace: %d \n",header_size,freespace);
+	if(freespace < (inserted_record_size+sizeof(uint16_t))){
 		return true;
 	}else{
 		return false;
