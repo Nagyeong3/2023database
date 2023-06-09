@@ -17,7 +17,7 @@ int main(){
 		key[STRING_LEN-1]='\0';
 		cnt++;
 		val*=cnt;
-		printf("tree->insert(%s,%llu)\n",key,val);
+		// printf("tree->insert(%s,%llu)\n",key,val);
 		tree->insert(key, val);
 		
 	}

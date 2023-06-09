@@ -149,12 +149,12 @@ bool page::insert(char *key,uint64_t val){
 			  
         	if (strcmp((char*)(void*)address, key) > 0) {
 				//printf("offset_array: %d, data+i*2: %d\n",offset_array+num_data,data+i*2);
-				memcpy(new_off,&data_dest,2);
-				// memcpy((data+(i+1)*2),(data+i*2),2*(num_data-i));
-				// //printf("data_dest: %d!!!!!\n",data_dest);
-				// memcpy(data+i*2,&data_dest,2);
-				// index=i;
-				// break;
+				printf("테스트케이스에서 여긴 들어올일 없음\n");
+				memcpy((data+(i+1)*2),(data+i*2),2*(num_data-i));
+				//printf("data_dest: %d!!!!!\n",data_dest);
+				memcpy(data+i*2,&data_dest,2);
+				index=i;
+				break;
         	}
 		}
 		
@@ -170,7 +170,7 @@ bool page::insert(char *key,uint64_t val){
 	
 
 	}
-		printf("현재 데이터 개수는? : %d\n", num_data);
+		// printf("현재 데이터 개수는? : %d\n", num_data);
 	
 	return true;
 }
@@ -184,7 +184,7 @@ page* page::split(char *key, uint64_t val, char** parent_key){
 	uint16_t off=0;
 	uint64_t stored_val=0;
 	void *data_region=nullptr;
-	printf("split page num data? %d\n",num_data);
+	// printf("split page num data? %d\n",num_data);
 	// this->print();
 	// printf("this addr???________________%llu",(uint64_t)this);
 	if(this->get_type()==LEAF){
@@ -196,15 +196,15 @@ page* page::split(char *key, uint64_t val, char** parent_key){
 			new_page->insert((char*)stored_key,stored_val);
 		}
 		new_page->insert(key,val);
-		printf("split page check\n");
-		new_page->print();
+		// printf("split page check\n");
+		// new_page->print();
 		//memcpy(this, new_page, sizeof(page));
 		hdr.set_offset_array((void*)((uint64_t)new_page+sizeof(slot_header)));
 		off= *(uint16_t *)((uint64_t)offset_array+(num_data/2)*2);
 		data_region = (void *)((uint64_t)this+(uint64_t)off);
 		stored_key = get_key(data_region);	//parent로 올릴 중간 노드
 		*parent_key = (char*)stored_key;
-		printf("what is midium node in split?? %s || %s\n",stored_key,(char*)*parent_key);
+		// printf("what is midium node in split?? %s || %s\n",stored_key,(char*)*parent_key);
 		return new_page;
 	}else if(this->get_type()==INTERNAL){
 		for(int i=num_data/2; i<num_data; i++){
@@ -222,7 +222,7 @@ page* page::split(char *key, uint64_t val, char** parent_key){
 		}
 		new_page->insert(key,val);
 		new_page -> print();
-		printf("new page의 get_leftmost %llu \n",new_page->get_leftmost_ptr());
+		// printf("new page의 get_leftmost %llu \n",new_page->get_leftmost_ptr());
 		return new_page;
 		
 	}
