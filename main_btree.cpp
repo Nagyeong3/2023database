@@ -11,13 +11,15 @@ int main(){
 	uint64_t cnt = 0;
 
 	for(i='a'; i<='z'; i+=1){
+	
 		for(int j=0; j<STRING_LEN-1; j++){
 			key[j] = i;
+		
 		}
 		key[STRING_LEN-1]='\0';
 		cnt++;
 		val*=cnt;
-		// printf("tree->insert(%s,%llu)\n",key,val);
+	
 		tree->insert(key, val);
 		
 	}

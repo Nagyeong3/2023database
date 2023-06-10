@@ -75,6 +75,7 @@ void btree::insert(char *key, uint64_t val){
 	// printf("currentpage is full? %d \n",currentPage->is_full(record_size));
 	//초기 currentPage가 LEAF node가 full인 경우 차곡차곡 위로 올라가며 full 확인해야 되므로
 	if(currentPage->is_full(record_size)){
+		
 		while(currentPage->is_full(record_size)){
 			uint16_t page_type = currentPage->get_type();
 			if(page_type==LEAF){
@@ -82,7 +83,8 @@ void btree::insert(char *key, uint64_t val){
 				// currentPage->print();
 				
 				new_page_leaf = currentPage->split(key,val,&parent_key);
-				// printf("parent key ??d 들어와야됨 %s\n",parent_key);
+				// printf("parent key ??x 들어와야됨 %s\n split result\n",parent_key);
+				// new_page_leaf->print();
 				// printf("new_page_leaf addrr????????&&&& %u\n",(uint64_t)new_page_leaf);
 				// printf("split이후 올라갈 key:%s\n ",parent_key);
 				// printf("%u  vs %u",(uint64_t)root, (uint64_t)currentPage);
@@ -105,7 +107,7 @@ void btree::insert(char *key, uint64_t val){
 					root=new_root;	//root=new_root
 
 					// root->set_leftmost_ptr(currentPage);
-					// root->print();
+					
 					// printf("c의 left most ptr %llu",root->get_leftmost_ptr());
 					// memcpy(currentPage, root, sizeof(page));
 					currentPage=root;
@@ -139,12 +141,12 @@ void btree::insert(char *key, uint64_t val){
 				// }
 				
 			}else if (page_type==INTERNAL&&((uint64_t)root!=(uint64_t)currentPage)){
-				printf("여긴 internal, not root\n");
+				// printf("여긴 internal, not root\n");
 				new_page_internal = currentPage->split(key,val,&parent_key);
 				// page* temp;
 				// temp=Pop(stack);
 				// temp->set_leftmost_ptr(currentPage);
-				// currentPage->defrag();
+				currentPage->defrag();
 				// printf("currentPage defrag 했음 \n");
 				// currentPage->print();
 				// currentPage=temp;
@@ -158,7 +160,7 @@ void btree::insert(char *key, uint64_t val){
 				// printf("key(%s)==parentkey(%s)",key,parent_key);
 				val = (uint64_t)new_page_internal;
 			}else if((uint64_t)root==(uint64_t)currentPage){
-				printf("여긴 root\n");
+				// printf("여긴 root\n");
 				height++;
 				
 				new_page_internal = currentPage->split(key,val,&parent_key);
@@ -202,8 +204,11 @@ void btree::insert(char *key, uint64_t val){
 		
 	}
 	else{
+	
 		// printf("currentpage full아님 바로 key:%s,val:%lu insert\n",key,val);
+		
 		currentPage->insert(key,val);
+			// currentPage->print();
 		return;
 	}
 	

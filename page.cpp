@@ -149,7 +149,7 @@ bool page::insert(char *key,uint64_t val){
 			  
         	if (strcmp((char*)(void*)address, key) > 0) {
 				//printf("offset_array: %d, data+i*2: %d\n",offset_array+num_data,data+i*2);
-				printf("테스트케이스에서 여긴 들어올일 없음\n");
+				// printf("테스트케이스에서 여긴 들어올일 없음\n");
 				memcpy((data+(i+1)*2),(data+i*2),2*(num_data-i));
 				//printf("data_dest: %d!!!!!\n",data_dest);
 				memcpy(data+i*2,&data_dest,2);
@@ -239,6 +239,7 @@ bool page::is_full(uint64_t inserted_record_size){
 	header_size+=num_data*2;
 	//printf("header size? : %d sizeof offsetarray",sizeof(slot_header));
 	int freespace = hdr.get_data_region_off()-header_size;
+	// printf("왜 프리스페이스 계속 남는지??? %d\n",freespace);
 	//printf("header_size: %d print freespace: %d \n",header_size,freespace);
 	if(freespace < (inserted_record_size+sizeof(uint16_t))){
 		return true;
