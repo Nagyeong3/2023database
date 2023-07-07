@@ -92,18 +92,18 @@ void btree::insert(char *key, uint64_t val){
 					// printf("root이자 curr\n");
 					page* new_root = new page(INTERNAL);
 					new_root->set_leftmost_ptr(currentPage);
-					
+					strcpy(key,parent_key);
+
+					val=(uint64_t)new_page_leaf;
 					
 					// new_root->insert(parent_key,val);
 					// printf("new root print\n");
 					// new_root->print();
 					currentPage->defrag();
 					printf("defrag결과1=================>>>>>>\n");
-					currentPage->insert(key,val);
+					
 
-					strcpy(key,parent_key);
-
-					val=(uint64_t)new_page_leaf;
+					
 
 					currentPage->print();
 					// printf("root get->leftmost connect @!!: %llu\n",(uint64_t)currentPage);

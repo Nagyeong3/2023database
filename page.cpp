@@ -196,9 +196,9 @@ page* page::split(char *key, uint64_t val, char** parent_key){
 			stored_val= get_val((void *)stored_key);
 			new_page->insert((char*)stored_key,stored_val);
 		}
-		if(strcmp((char*)stored_key,key)<0){
+		
 			new_page->insert(key,val);
-		}
+		
 		
 		// printf("split page check\n");
 		// new_page->print();
