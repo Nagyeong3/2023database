@@ -12,7 +12,7 @@ int main(){
 	uint64_t cnt = 0;
 	
 
-	for(i='a'; i<='j'; i++){
+	for(i='z'; i>='a'; i--){
 		for(int j=0; j<STRING_LEN-1; j++){
 			key[j] = i;
 		}
@@ -24,7 +24,7 @@ int main(){
 p->print();
 	val = 100;
 	cnt = 0;
-	for(i='a'; i<='j'; i++){
+	for(i='z'; i>='a'; i--){
 		for(int j=0; j<STRING_LEN-1; j++){
 			key[j] = i;
 		}

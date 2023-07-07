@@ -144,22 +144,23 @@ bool page::insert(char *key,uint64_t val){
 		for(int i=0; i<num_data; i++){
 			uint64_t curr_off=get2byte(data+i*2);
 			address=(uint64_t)this+curr_off+2;  //offset array에 들어간 키의 주소값
-			//printf("curr_off(%d)에 들어간 key = %s\n",curr_off, (char*)(void*)address);
-
-			  
-        	if (strcmp((char*)(void*)address, key) > 0) {
-				//printf("offset_array: %d, data+i*2: %d\n",offset_array+num_data,data+i*2);
+			// printf("curr_off(%d)에 들어간 key = %s\n",curr_off, (char*)(void*)address);
+			// printf("내가 넣을 key: %s\n",key);
+			  if (strcmp((char*)(void*)address, key) > 0) {
+				// printf("offset_array: %d, data+i*2: %d\n",offset_array+num_data,data+i*2);
 				// printf("테스트케이스에서 여긴 들어올일 없음\n");
 				memcpy((data+(i+1)*2),(data+i*2),2*(num_data-i));
-				//printf("data_dest: %d!!!!!\n",data_dest);
+				// printf("data_dest: %d!!!!!\n",data_dest);
 				memcpy(data+i*2,&data_dest,2);
+				// printf("data0th 에 들어간 off = %d\n", get2byte(data));
 				index=i;
 				break;
         	}
+        	
 		}
 		
 		if(index==-1){
-			// printf("모두 넣을 때 여기로\n");
+			printf("모두 넣을 때 여기로\n");
 			memcpy(new_off,&data_dest,2);
 		}
 		
@@ -195,7 +196,10 @@ page* page::split(char *key, uint64_t val, char** parent_key){
 			stored_val= get_val((void *)stored_key);
 			new_page->insert((char*)stored_key,stored_val);
 		}
-		new_page->insert(key,val);
+		if(strcmp((char*)stored_key,key)<0){
+			new_page->insert(key,val);
+		}
+		
 		// printf("split page check\n");
 		// new_page->print();
 		//memcpy(this, new_page, sizeof(page));
@@ -263,7 +267,8 @@ void page::defrag(){
 		stored_key = get_key(data_region);
 		stored_val= get_val((void *)stored_key);
 		new_page->insert((char*)stored_key,stored_val);
-	}	
+	}
+	
 	new_page->set_leftmost_ptr(get_leftmost_ptr());
 
 	memcpy(this, new_page, sizeof(page));

@@ -79,12 +79,12 @@ void btree::insert(char *key, uint64_t val){
 		while(currentPage->is_full(record_size)){
 			uint16_t page_type = currentPage->get_type();
 			if(page_type==LEAF){
-				// printf("여긴 리프\n");
-				// currentPage->print();
+				printf("여긴 리프\n");
+				currentPage->print();
 				
 				new_page_leaf = currentPage->split(key,val,&parent_key);
-				// printf("parent key ??x 들어와야됨 %s\n split result\n",parent_key);
-				// new_page_leaf->print();
+				printf("들어온 parent key %s\n split result\n",parent_key);
+				new_page_leaf->print();
 				// printf("new_page_leaf addrr????????&&&& %u\n",(uint64_t)new_page_leaf);
 				// printf("split이후 올라갈 key:%s\n ",parent_key);
 				// printf("%u  vs %u",(uint64_t)root, (uint64_t)currentPage);
@@ -93,20 +93,24 @@ void btree::insert(char *key, uint64_t val){
 					page* new_root = new page(INTERNAL);
 					new_root->set_leftmost_ptr(currentPage);
 					
-					strcpy(key,parent_key);
-
-					val=(uint64_t)new_page_leaf;
+					
 					// new_root->insert(parent_key,val);
 					// printf("new root print\n");
 					// new_root->print();
 					currentPage->defrag();
-					// printf("defrag결과=================>>>>>>\n");
-					// currentPage->print();
+					printf("defrag결과1=================>>>>>>\n");
+					currentPage->insert(key,val);
+
+					strcpy(key,parent_key);
+
+					val=(uint64_t)new_page_leaf;
+
+					currentPage->print();
 					// printf("root get->leftmost connect @!!: %llu\n",(uint64_t)currentPage);
 				
 					root=new_root;	//root=new_root
 
-					// root->set_leftmost_ptr(currentPage);
+					root->set_leftmost_ptr(currentPage);
 					
 					// printf("c의 left most ptr %llu",root->get_leftmost_ptr());
 					// memcpy(currentPage, root, sizeof(page));
@@ -119,7 +123,7 @@ void btree::insert(char *key, uint64_t val){
 					// printf("key(%s)==parentkey(%s)",key,parent_key);
 					
 					currentPage->defrag();
-					// printf("defrag결과 잠깐지움=================>>>>>>\n");
+					// printf("defrag결과 qrst??=================>>>>>>\n");
 					// printf("x1x1currpage addr:%llu\n",(uint64_t)currentPage);
 					// currentPage->print();
 					
@@ -181,6 +185,7 @@ void btree::insert(char *key, uint64_t val){
 				root=new_root;
 				
 				currentPage=root;
+
 				// memcpy(currentPage, root, sizeof(page));//currentPage=root;
 				// printf("new root_left most ptr %llu, 레프트 모스트 따라간 자식 페이지 프린트는?\n",(u_int64_t)currentPage->get_leftmost_ptr());
 				//  currentPage->print();
@@ -198,9 +203,9 @@ void btree::insert(char *key, uint64_t val){
 		// printf("key ????? %s \n",key);
 		// printf("curr add %llu, root add %llu",currentPage,root);
 		currentPage->insert(key,val);
-		
-		// currentPage->print();
-			return;
+		printf("insert후 print\n");
+		currentPage->print();
+		return;
 		
 	}
 	else{
